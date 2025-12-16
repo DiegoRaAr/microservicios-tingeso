@@ -18,6 +18,7 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LoanEntity {
+    //Primary key
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idLoan;
@@ -27,7 +28,8 @@ public class LoanEntity {
     private Date endDate;
     private String stateLoan;
     private int penaltyLoan;
-    private int totalLoan;
-    
+
+    //Foreing key
+    private Long idPrice;
     private Long idClient;
 }
