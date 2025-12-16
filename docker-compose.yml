@@ -98,6 +98,27 @@ services:
       - SPRING_DATASOURCE_USERNAME=diego
       - SPRING_DATASOURCE_PASSWORD=diego1234
 
+  loan-service:
+    build:
+      context: ./loan-service
+      dockerfile: Dockerfile
+    container_name: loan-service
+    ports:
+      - "8092:8092"
+    networks:
+      - tingeso-network
+    depends_on:
+      eureka-service:
+        condition: service_healthy
+    environment:
+      - SPRING_CLOUD_CONFIG_ENABLED=false
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-service:8761/eureka/
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=false
+      - EUREKA_INSTANCE_HOSTNAME=loan-service
+      - SPRING_DATASOURCE_URL=jdbc:mysql://host.docker.internal:3306/bd_microservice_loan
+      - SPRING_DATASOURCE_USERNAME=diego
+      - SPRING_DATASOURCE_PASSWORD=diego1234
+
 networks:
   tingeso-network:
     driver: bridge
