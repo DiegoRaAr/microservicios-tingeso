@@ -13,11 +13,6 @@ public interface ToolRepository extends JpaRepository<ToolEntity, Long> {
     // Output: tool entity
     public ToolEntity findByNameTool(String name);
 
-    // Function to find tool by id.
-    // Input: id of tool(Long)
-    // Output: tool entity
-    public ToolEntity findByIdTool(long id);
-
     // Function to find tool by category.
     // Input: category of tool(String)
     // Output: list of tool entities

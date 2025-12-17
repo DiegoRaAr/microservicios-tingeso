@@ -31,8 +31,9 @@ public class KardexController {
     // Create kardex
     @PostMapping("/")
     public ResponseEntity<KardexEntity> saveKardex(@RequestBody KardexEntity kardexEntity){
+        System.out.println("📩 Kardex recibido: " + kardexEntity);  // ← Agrega esto
         KardexEntity newKardex = kardexService.createKardex(kardexEntity);
-        return   ResponseEntity.ok(newKardex);
+        return ResponseEntity.ok(newKardex);
     }
 
     // Update kardex

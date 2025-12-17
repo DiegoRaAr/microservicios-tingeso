@@ -14,10 +14,12 @@
         <module name="tool-service" />
         <module name="price-service" />
         <module name="report-service" />
-        <module name="user-service" />
         <module name="client-service" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="user-service" target="17" />
+    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
