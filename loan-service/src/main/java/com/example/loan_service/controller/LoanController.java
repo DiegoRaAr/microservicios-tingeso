@@ -1,6 +1,8 @@
 package com.example.loan_service.controller;
 
 import com.example.loan_service.entities.LoanEntity;
+import com.example.loan_service.entities.LoanToolEntity;
+import com.example.loan_service.models.Tool;
 import com.example.loan_service.service.LoanService;
 import org.hibernate.tool.schema.spi.SourceDescriptor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,5 +58,35 @@ public class LoanController {
     public ResponseEntity<List<LoanEntity>> getLoanByRutClient(@PathVariable String rut) {
         List<LoanEntity> loans = loanService.findByRutClient(rut);
         return ResponseEntity.ok(loans);
+    }
+
+    // Get tools by loan id
+    @GetMapping("/tools/{idLoan}")
+    public ResponseEntity<List<Tool>> getToolsByLoanId(@PathVariable Long idLoan) {
+        List<Tool> tools = loanService.findToolById(idLoan);
+        return ResponseEntity.ok(tools);
+    }
+
+    ////////////////// LOAN TOOL //////////////////
+
+    // Create loan-tool association
+    @PostMapping("/loan-tool")
+    public ResponseEntity<LoanToolEntity> createLoanTool(@RequestBody LoanToolEntity loanTool) {
+        LoanToolEntity newLoanTool = loanService.saveLoanTool(loanTool);
+        return ResponseEntity.ok(newLoanTool);
+    }
+
+    // Get all loan-tool associations
+    @GetMapping("/loan-tool")
+    public ResponseEntity<List<LoanToolEntity>> listLoanTools() {
+        List<LoanToolEntity> loanTools = loanService.getAllLoanTools();
+        return ResponseEntity.ok(loanTools);
+    }
+
+    // Delete loan-tool association
+    @DeleteMapping("/loan-tool/{id}")
+    public ResponseEntity<Boolean> deleteLoanTool(@PathVariable Long id) throws Exception {
+        loanService.deleteLoanTool(id);
+        return ResponseEntity.noContent().build();
     }
 }
