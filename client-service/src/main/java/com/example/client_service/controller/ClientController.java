@@ -55,4 +55,18 @@ public class ClientController {
         ClientEntity client = clientService.getClientByRut(rut);
         return ResponseEntity.ok(client);
     }
+
+    // Change state client
+    @PutMapping("/change-state/{id}")
+    public ResponseEntity<ClientEntity> changeStateClient(@PathVariable Long id) throws Exception{
+        ClientEntity client = clientService.changeStateClient(id);
+        return ResponseEntity.ok(client);
+    }
+
+    // Get restricted clients
+    @GetMapping("/restricted-clients")
+    public ResponseEntity<List<ClientEntity>> getRestrictedClients(){
+        List<ClientEntity> restrictedClients = clientService.getRestrictedClients();
+        return ResponseEntity.ok(restrictedClients);
+    }
 }
