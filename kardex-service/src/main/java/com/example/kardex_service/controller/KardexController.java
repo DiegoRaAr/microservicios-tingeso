@@ -3,6 +3,7 @@ package com.example.kardex_service.controller;
 import com.example.kardex_service.entities.KardexEntity;
 import com.example.kardex_service.services.KardexService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -48,5 +49,14 @@ public class KardexController {
     public ResponseEntity<Boolean> deleteKardexByID(@PathVariable Long id)throws Exception{
         var isDeleted = kardexService.deleteKardex(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/byDate/{startDate}/{endDate}")
+    public ResponseEntity<List<KardexEntity>> kardexByDate(
+            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) java.util.Date startDate,
+            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) java.util.Date endDate
+    ) {
+        List<KardexEntity> kardexs = kardexService.findByDateKardexBetween(startDate,endDate);
+        return ResponseEntity.ok(kardexs);
     }
 }

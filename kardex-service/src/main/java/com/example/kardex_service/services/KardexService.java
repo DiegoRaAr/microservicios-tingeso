@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 @Service
 public class KardexService {
@@ -40,5 +42,10 @@ public class KardexService {
         }catch (Exception e){
             throw new Exception(e.getMessage());
         }
+    }
+
+    // find Kardex between date
+    public List<KardexEntity> findByDateKardexBetween(Date startdate, Date enddate){
+        return kardexRepository.findByDateKardexBetween(startdate,enddate);
     }
 }

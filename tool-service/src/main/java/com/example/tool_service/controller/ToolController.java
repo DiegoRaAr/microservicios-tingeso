@@ -3,6 +3,7 @@ package com.example.tool_service.controller;
 import com.example.tool_service.entities.ToolEntity;
 import com.example.tool_service.services.ToolService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -61,5 +62,15 @@ public class ToolController {
     public   ResponseEntity<Boolean> addToolNumber(@PathVariable Long id) throws Exception {
         toolService.addTool(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // Get best tools by range date
+    @GetMapping("/best-tools-by-range-date/{initDate}/{endDate}")
+    public ResponseEntity<List<ToolEntity>> getBestToolsByRangeDate(
+            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) java.util.Date initDate,
+            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) java.util.Date endDate
+    ) {
+        List<ToolEntity> bestTools = toolService.getBestToolsByRangeDate(initDate, endDate);
+        return ResponseEntity.ok(bestTools);
     }
 }

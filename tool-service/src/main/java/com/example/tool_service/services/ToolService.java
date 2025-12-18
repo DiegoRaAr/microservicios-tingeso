@@ -11,8 +11,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
-import java.util.ArrayList;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class ToolService {
@@ -74,7 +73,7 @@ public class ToolService {
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         ToolEntity tool = toolRepository.findById(id_tool).get();
-        if(tool == null){
+        if (tool == null) {
             return false;
         }
 
@@ -85,7 +84,7 @@ public class ToolService {
         kardex.setIdTool(tool.getIdTool());
 
         // if tool is last one
-        if (stock <= 1){
+        if (stock <= 1) {
             tool.setStockTool(stock - 1);
             tool.setStateTool("BAJA");
 
@@ -100,7 +99,7 @@ public class ToolService {
         }
 
         // if tool is not last one
-        if (tool.getStockTool() > 1){
+        if (tool.getStockTool() > 1) {
             tool.setStockTool(tool.getStockTool() - 1);
 
             kardex.setStateTool("DISMINUCIÓN");
@@ -118,11 +117,11 @@ public class ToolService {
     }
 
     // Add tool by id
-    public boolean addTool(Long id){
+    public boolean addTool(Long id) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        ToolEntity tool =  findById(id);
+        ToolEntity tool = findById(id);
         Kardex kardex = new Kardex();
 
         // Update the kardex
@@ -137,5 +136,39 @@ public class ToolService {
         tool.setStockTool(tool.getStockTool() + 1);
         toolRepository.save(tool);
         return true;
+    }
+
+    // Get best tools by range date
+    public List<ToolEntity> getBestToolsByRangeDate(java.util.Date initDate, java.util.Date endDate) {
+        // Get all kardex between the given dates from kardex-service
+        String url = String.format("http://kardex-service/kardex/byDate/%tF/%tF", initDate, endDate);
+        Kardex[] kardexArray = restTemplate.getForObject(url, Kardex[].class);
+        List<Kardex> kardexList = Arrays.asList(kardexArray);
+
+        // filter for "PRESTAMO" state
+        List<Kardex> prestamos = kardexList.stream()
+                .filter(k -> "PRESTAMO".equals(k.getStateTool()))
+                .toList();
+
+        // Count occurrences of each tool ID
+        Map<Long, Integer> toolCount = new HashMap<>();
+        for (Kardex kardex : prestamos) {
+            Long toolId = kardex.getIdTool();
+            toolCount.put(toolId, toolCount.getOrDefault(toolId, 0) + 1);
+        }
+
+        // Order tool IDs by their count in descending order
+        List<Long> sortedToolIds = toolCount.entrySet().stream()
+                .sorted((a, b) -> b.getValue().compareTo(a.getValue()))
+                .map(Map.Entry::getKey)
+                .toList();
+
+        // get ToolEntity objects for the sorted IDs
+        List<ToolEntity> bestTools = new ArrayList<>();
+        for (Long toolId : sortedToolIds) {
+            toolRepository.findById(toolId).ifPresent(bestTools::add);
+        }
+
+        return bestTools;
     }
 }
