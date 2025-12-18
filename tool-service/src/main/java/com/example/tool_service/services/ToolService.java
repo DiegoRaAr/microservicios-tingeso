@@ -12,6 +12,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 
 import java.util.ArrayList;
+import java.util.Optional;
 
 @Service
 public class ToolService {
@@ -64,5 +65,77 @@ public class ToolService {
         } catch (Exception e) {
             throw new Exception(e.getMessage());
         }
+    }
+
+    // subtract 1 by id
+    @Transactional
+    public boolean subtractTool(Long id_tool) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        ToolEntity tool = toolRepository.findById(id_tool).get();
+        if(tool == null){
+            return false;
+        }
+
+        int stock = tool.getStockTool();
+
+        Kardex kardex = new Kardex();
+        kardex.setDateKardex(new java.util.Date());
+        kardex.setIdTool(tool.getIdTool());
+
+        // if tool is last one
+        if (stock <= 1){
+            tool.setStockTool(stock - 1);
+            tool.setStateTool("BAJA");
+
+            kardex.setStateTool("BAJA");
+            kardex.setNameTool(tool.getNameTool());
+
+            HttpEntity<Kardex> request = new HttpEntity<>(kardex, headers);
+            restTemplate.postForObject("http://kardex-service/kardex/", request, Kardex.class);
+
+            toolRepository.save(tool);
+            return true;
+        }
+
+        // if tool is not last one
+        if (tool.getStockTool() > 1){
+            tool.setStockTool(tool.getStockTool() - 1);
+
+            kardex.setStateTool("DISMINUCIÓN");
+            kardex.setNameTool(tool.getNameTool());
+
+            HttpEntity<Kardex> request = new HttpEntity<>(kardex, headers);
+            restTemplate.postForObject("http://kardex-service/kardex/", request, Kardex.class);
+
+            toolRepository.save(tool);
+            return true;
+        }
+
+        System.out.println("Action not found (subtract one)");
+        return false;
+    }
+
+    // Add tool by id
+    public boolean addTool(Long id){
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        ToolEntity tool =  findById(id);
+        Kardex kardex = new Kardex();
+
+        // Update the kardex
+        kardex.setDateKardex(new java.util.Date());
+        kardex.setIdTool(tool.getIdTool());
+        kardex.setStateTool("SUMA");
+        kardex.setNameTool(tool.getNameTool());
+
+        HttpEntity<Kardex> request = new HttpEntity<>(kardex, headers);
+        restTemplate.postForObject("http://kardex-service/kardex/", request, Kardex.class);
+
+        tool.setStockTool(tool.getStockTool() + 1);
+        toolRepository.save(tool);
+        return true;
     }
 }

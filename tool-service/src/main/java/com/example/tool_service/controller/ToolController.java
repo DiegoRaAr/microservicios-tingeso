@@ -48,4 +48,18 @@ public class ToolController {
         var isDeleted = toolService.deleteTool(id);
         return ResponseEntity.noContent().build();
     }
+
+    // Subtract tool number
+    @PutMapping("/subtract-tool/{id}")
+    public   ResponseEntity<Boolean> subtractToolNumber(@PathVariable Long id) throws Exception {
+        toolService.subtractTool(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    // Add tool number
+    @PutMapping("/add-tool/{id}")
+    public   ResponseEntity<Boolean> addToolNumber(@PathVariable Long id) throws Exception {
+        toolService.addTool(id);
+        return ResponseEntity.noContent().build();
+    }
 }
