@@ -28,4 +28,6 @@ public interface LoanRepository extends JpaRepository<LoanEntity, Long> {
     // Output: list of loan entities
     List<LoanEntity> findByStateLoan(String state);
 
+    List<LoanEntity> findByIdClient(Long idClient);
+
 }
