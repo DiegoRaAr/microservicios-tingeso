@@ -6,9 +6,11 @@ import com.example.loan_service.models.Tool;
 import com.example.loan_service.service.LoanService;
 import org.hibernate.tool.schema.spi.SourceDescriptor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -66,6 +68,18 @@ public class LoanController {
         List<Tool> tools = loanService.findToolById(idLoan);
         return ResponseEntity.ok(tools);
     }
+
+    // Get loans by range date
+    @GetMapping("/loans-by-range-date/{initDate}/{endDate}")
+    public ResponseEntity<List<LoanEntity>> getLoansByRangeDate(
+            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date initDate,
+            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date endDate
+    ) throws Exception {
+        return ResponseEntity.ok(loanService.getLoansByDateRange(initDate, endDate));
+    }
+
+
+
 
     ////////////////// LOAN TOOL //////////////////
 

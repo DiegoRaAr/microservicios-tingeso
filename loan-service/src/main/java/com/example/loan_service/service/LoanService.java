@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -81,6 +82,30 @@ public class LoanService {
 
         return tools;
     }
+
+    // Get all loans by date range
+    public List<LoanEntity> getLoansByDateRange(Date startDate, Date endDate) throws Exception {
+        if (startDate == null || endDate == null) {
+            throw new Exception("Las fechas no pueden ser nulas");
+        }
+        if (endDate.before(startDate)) {
+            throw new Exception("La fecha de fin no puede ser anterior a la fecha de inicio");
+        }
+
+        List<LoanEntity> allLoans = loanRepository.findAll();
+        List<LoanEntity> filteredLoans = new ArrayList<>();
+
+        for (LoanEntity loan : allLoans) {
+            Date initDate = loan.getInitDate();
+            if (initDate != null && !initDate.before(startDate) && !initDate.after(endDate)) {
+                filteredLoans.add(loan);
+            }
+        }
+        return filteredLoans;
+    }
+
+
+
 
     ////////////////////// LOAN TOOL //////////////////////
 
