@@ -2,9 +2,9 @@ package com.example.loan_service.controller;
 
 import com.example.loan_service.entities.LoanEntity;
 import com.example.loan_service.entities.LoanToolEntity;
+import com.example.loan_service.models.LoanRequest;
 import com.example.loan_service.models.Tool;
 import com.example.loan_service.service.LoanService;
-import org.hibernate.tool.schema.spi.SourceDescriptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -29,8 +29,8 @@ public class LoanController {
 
     // Create loan
     @PostMapping("/")
-    public ResponseEntity<LoanEntity> createLoan(@RequestBody LoanEntity loan) {
-        LoanEntity newLoan = loanService.saveLoan(loan);
+    public ResponseEntity<LoanEntity> createLoan(@RequestBody LoanRequest loanRequest) throws Exception {
+        LoanEntity newLoan = loanService.saveLoan(loanRequest.getLoan(), loanRequest.getToolIds());
         return ResponseEntity.ok(newLoan);
     }
 
@@ -73,24 +73,23 @@ public class LoanController {
     @GetMapping("/loans-by-range-date/{initDate}/{endDate}")
     public ResponseEntity<List<LoanEntity>> getLoansByRangeDate(
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date initDate,
-            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date endDate
-    ) throws Exception {
+            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date endDate) throws Exception {
         return ResponseEntity.ok(loanService.getLoansByDateRange(initDate, endDate));
     }
 
     // Update penalty loan
     @PutMapping("/update-penalty/{id}")
-    public ResponseEntity<LoanEntity> updatePenaltyLoan(@PathVariable Long id){
+    public ResponseEntity<LoanEntity> updatePenaltyLoan(@PathVariable Long id) {
         LoanEntity loanUpdated = loanService.updatePenaltyLoan(id);
         return ResponseEntity.ok(loanUpdated);
     }
 
     // Finish loan
     @PutMapping("/finish-loan/{id}/{totalValue}")
-    public ResponseEntity<LoanEntity> finishLoan(@PathVariable Long id, @PathVariable Integer totalValue) throws Exception{
-        return ResponseEntity.ok(loanService.finalizeLoan(id,totalValue));
+    public ResponseEntity<LoanEntity> finishLoan(@PathVariable Long id, @PathVariable Integer totalValue)
+            throws Exception {
+        return ResponseEntity.ok(loanService.finalizeLoan(id, totalValue));
     }
-
 
     ////////////////// LOAN TOOL //////////////////
 

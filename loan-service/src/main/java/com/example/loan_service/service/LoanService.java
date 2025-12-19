@@ -37,9 +37,150 @@ public class LoanService {
         return (ArrayList<LoanEntity>) loanRepository.findAll();
     }
 
-    // Create Loan
-    public LoanEntity saveLoan(LoanEntity loanEntity) {
-        return loanRepository.save(loanEntity);
+    // Create Loan with conditions (migrated from monolith to microservices)
+    public LoanEntity saveLoan(LoanEntity loanEntity, List<Long> toolIds) throws Exception {
+        // 1. Get client and verify if it exists
+        Long idClient = loanEntity.getIdClient();
+        String clientUrl = String.format("http://client-service/client/%d", idClient);
+        GetClient client = restTemplate.getForObject(clientUrl, GetClient.class);
+
+        if (client == null) {
+            throw new Exception("Cliente no encontrado");
+        }
+
+        // 2. Verify if client is restricted
+        if ("RESTRINGIDO".equals(client.getStateClient())) {
+            throw new Exception("El cliente se encuentra restringido");
+        }
+
+        // 3. Get all loans of client and verify if it has debt
+        List<LoanEntity> loans = loanRepository.findByIdClient(idClient);
+        boolean hasDebt = false;
+        int activeLoansCount = 0;
+
+        for (LoanEntity l : loans) {
+            // Count active loans
+            if ("ACTIVO".equals(l.getStateLoan())) {
+                activeLoansCount++;
+            }
+            // Check for debts
+            int penalty = l.getPenaltyLoan();
+            if (penalty > 0 && "ACTIVO".equals(l.getStateLoan())) {
+                hasDebt = true;
+            }
+        }
+
+        // 4. Verify if client has 5 active loans
+        if (activeLoansCount >= 5) {
+            throw new Exception("El cliente ya tiene 5 prestamos activos");
+        }
+
+        // 5. Verify if client has debt
+        if (hasDebt) {
+            throw new Exception("El cliente tiene deudas pendientes");
+        }
+
+        // 6. Verify if end date is before start date
+        Date initDate = loanEntity.getInitDate();
+        Date endDate = loanEntity.getEndDate();
+
+        if (endDate.before(initDate)) {
+            throw new Exception("La fecha de fin no puede ser anterior a la fecha de inicio");
+        }
+
+        // 7. Calculate days of loan
+        java.time.LocalDate start = initDate.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDate();
+        java.time.LocalDate end = endDate.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDate();
+        long days = java.time.temporal.ChronoUnit.DAYS.between(start, end) + 1;
+
+        // 8. Get all tools and verify if they exist
+        List<Tool> completeTools = new ArrayList<>();
+        for (Long toolId : toolIds) {
+            String toolUrl = String.format("http://tool-service/tool/%d", toolId);
+            Tool tool = restTemplate.getForObject(toolUrl, Tool.class);
+
+            if (tool == null) {
+                throw new Exception("Herramienta no encontrada con id: " + toolId);
+            }
+            completeTools.add(tool);
+        }
+
+        // 9. Calculate total of loan and update stock of tools
+        int total = 0;
+        HttpHeaders toolHeaders = new HttpHeaders();
+        toolHeaders.setContentType(MediaType.APPLICATION_JSON);
+
+        for (Tool tool : completeTools) {
+            // Update stock of tool using PUT endpoint
+            tool.setStockTool(tool.getStockTool() - 1);
+
+            // Update state if stock is 0
+            if (tool.getStockTool() == 0) {
+                tool.setStateTool("BAJA");
+            }
+
+            // Call PUT endpoint to update tool
+            String toolUpdateUrl = String.format("http://tool-service/tool/%d", tool.getIdTool());
+            org.springframework.http.HttpEntity<Tool> toolRequest = new org.springframework.http.HttpEntity<>(tool,
+                    toolHeaders);
+            restTemplate.put(toolUpdateUrl, toolRequest);
+
+            // Add daily charge to total
+            total += tool.getDailyCharge();
+
+            // Create kardex for each tool
+            Kardex kardex = new Kardex();
+            kardex.setDateKardex(new Date());
+            kardex.setIdTool(tool.getIdTool());
+            kardex.setNameTool(tool.getNameTool());
+            kardex.setStateTool("PRESTAMO");
+
+            // Save kardex via POST endpoint
+            String kardexUrl = "http://kardex-service/kardex/";
+            HttpHeaders kardexHeaders = new HttpHeaders();
+            kardexHeaders.setContentType(MediaType.APPLICATION_JSON);
+            org.springframework.http.HttpEntity<Kardex> kardexRequest = new org.springframework.http.HttpEntity<>(
+                    kardex, kardexHeaders);
+            restTemplate.postForObject(kardexUrl, kardexRequest, Kardex.class);
+        }
+
+        // 10. Calculate total price
+        total = Math.toIntExact(total * days);
+
+        // 11. Set loan variables
+        loanEntity.setHourLoan(java.time.LocalTime.now());
+        loanEntity.setStateLoan("ACTIVO");
+
+        // 12. Save loan first to get the ID
+        LoanEntity savedLoan = loanRepository.save(loanEntity);
+
+        // 13. Create price in price-service
+        Price priceObj = new Price();
+        priceObj.setIdLoan(savedLoan.getIdLoan());
+        priceObj.setPrice(total);
+
+        String priceUrl = "http://price-service/price/";
+        HttpHeaders priceHeaders = new HttpHeaders();
+        priceHeaders.setContentType(MediaType.APPLICATION_JSON);
+        org.springframework.http.HttpEntity<Price> priceRequest = new org.springframework.http.HttpEntity<>(priceObj,
+                priceHeaders);
+        Price createdPrice = restTemplate.postForObject(priceUrl, priceRequest, Price.class);
+
+        // 14. Update loan with price ID
+        if (createdPrice != null) {
+            savedLoan.setIdPrice(createdPrice.getIdPrice());
+            savedLoan = loanRepository.save(savedLoan);
+        }
+
+        // 15. Create LoanTool associations
+        for (Long toolId : toolIds) {
+            LoanToolEntity loanTool = new LoanToolEntity();
+            loanTool.setIdLoan(savedLoan.getIdLoan());
+            loanTool.setIdTool(toolId);
+            loanToolRepository.save(loanTool);
+        }
+
+        return savedLoan;
     }
 
     // Find Loan by Id
