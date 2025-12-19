@@ -78,7 +78,12 @@ public class LoanController {
         return ResponseEntity.ok(loanService.getLoansByDateRange(initDate, endDate));
     }
 
-
+    // Update penalty loan
+    @PutMapping("/update-penalty/{id}")
+    public ResponseEntity<LoanEntity> updatePenaltyLoan(@PathVariable Long id){
+        LoanEntity loanUpdated = loanService.updatePenaltyLoan(id);
+        return ResponseEntity.ok(loanUpdated);
+    }
 
 
     ////////////////// LOAN TOOL //////////////////
