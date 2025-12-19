@@ -13,10 +13,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PriceEntity {
-    //Primary key
+    // Primary key
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idPrice;
 
-    int price;
+    private Long idLoan;
+    private int price;
 }

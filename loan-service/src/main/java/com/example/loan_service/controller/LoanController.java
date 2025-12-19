@@ -85,6 +85,12 @@ public class LoanController {
         return ResponseEntity.ok(loanUpdated);
     }
 
+    // Finish loan
+    @PutMapping("/finish-loan/{id}/{totalValue}")
+    public ResponseEntity<LoanEntity> finishLoan(@PathVariable Long id, @PathVariable Integer totalValue) throws Exception{
+        return ResponseEntity.ok(loanService.finalizeLoan(id,totalValue));
+    }
+
 
     ////////////////// LOAN TOOL //////////////////
 

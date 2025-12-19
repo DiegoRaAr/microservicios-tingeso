@@ -16,28 +16,35 @@ public class PriceController {
 
     // Get all prices
     @GetMapping("/")
-    public ResponseEntity<ArrayList<PriceEntity>> listPrice(){
+    public ResponseEntity<ArrayList<PriceEntity>> listPrice() {
         ArrayList<PriceEntity> prices = priceService.getAllPrice();
         return ResponseEntity.ok(prices);
     }
 
     // Get price by id
     @GetMapping("/{id}")
-    public ResponseEntity<PriceEntity> getPriceById(@PathVariable Long id){
+    public ResponseEntity<PriceEntity> getPriceById(@PathVariable Long id) {
         PriceEntity price = priceService.findByIdPrice(id);
         return ResponseEntity.ok(price);
     }
 
+    // Create price
+    @PostMapping("/")
+    public ResponseEntity<PriceEntity> savePrice(@RequestBody PriceEntity price) {
+        PriceEntity newPrice = priceService.savePrice(price);
+        return ResponseEntity.ok(newPrice);
+    }
+
     // Update price
     @PutMapping("/")
-    public ResponseEntity<PriceEntity> updatePrice(@RequestBody PriceEntity price){
+    public ResponseEntity<PriceEntity> updatePrice(@RequestBody PriceEntity price) {
         PriceEntity priceUpdated = priceService.updatePrice(price);
         return ResponseEntity.ok(priceUpdated);
     }
 
     // Delete price by id
     @DeleteMapping("/{id}")
-    public ResponseEntity<Boolean> deletePriceByID(@PathVariable Long id) throws Exception{
+    public ResponseEntity<Boolean> deletePriceByID(@PathVariable Long id) throws Exception {
         var isDeleted = priceService.deletePrice(id);
         return ResponseEntity.noContent().build();
     }

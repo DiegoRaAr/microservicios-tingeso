@@ -1,9 +1,10 @@
 package com.example.loan_service.service;
 
-import ch.qos.logback.core.net.server.Client;
 import com.example.loan_service.entities.LoanEntity;
 import com.example.loan_service.entities.LoanToolEntity;
 import com.example.loan_service.models.GetClient;
+import com.example.loan_service.models.Kardex;
+import com.example.loan_service.models.Price;
 import com.example.loan_service.models.Tool;
 import com.example.loan_service.repository.LoanRepository;
 import com.example.loan_service.repository.LoanToolRepository;
@@ -163,6 +164,104 @@ public class LoanService {
         }
 
         return loanEntity;
+    }
+
+    // Finalize loan with conditions
+    public LoanEntity finalizeLoan(Long id, int totalValueLoan) {
+        Kardex kardex = new Kardex();
+        kardex.setDateKardex(new java.util.Date());
+
+        // Search loan by id
+        LoanEntity loanEntity = loanRepository.findByIdLoan(id)
+                .orElseThrow(() -> new RuntimeException("Loan not found with id: " + id));
+
+        Long idClient = loanEntity.getIdClient();
+
+        // Get client of loan
+        String url = String.format("http://client-service/client/%d", idClient);
+        GetClient client = restTemplate.getForObject(url, GetClient.class);
+
+        // Get all tools of loan
+        List<Long> idsTool = loanToolRepository.findAllByIdLoan(id);
+        List<Tool> tools = idsTool.stream()
+                .map(idTool -> {
+                    String url2 = String.format("http://tool-service/tool/%d", idTool);
+                    return restTemplate.getForObject(url2, Tool.class);
+                })
+                .toList();
+
+        // Update stock tool and save kardex
+        for (Tool tool : tools) {
+            // Update stock tool and state tool if is needed
+            tool.setStockTool(tool.getStockTool() + 1);
+            if (tool.getStockTool() == 1) {
+                tool.setStateTool("ACTIVA");
+            }
+
+            // Call PUT endpoint of tool-service to update tool
+            String toolUpdateUrl = String.format("http://tool-service/tool/%d", tool.getIdTool());
+            HttpHeaders toolHeaders = new HttpHeaders();
+            toolHeaders.setContentType(MediaType.APPLICATION_JSON);
+            org.springframework.http.HttpEntity<Tool> toolRequest = new org.springframework.http.HttpEntity<>(tool,
+                    toolHeaders);
+            restTemplate.put(toolUpdateUrl, toolRequest);
+
+            // Prepare kardex for this tool
+            kardex.setIdTool(tool.getIdTool());
+            kardex.setNameTool(tool.getNameTool());
+            kardex.setStateTool("DEVOLUCIÓN");
+
+            // Call POST endpoint of kardex-service to save kardex
+            String kardexSaveUrl = "http://kardex-service/kardex";
+            HttpHeaders kardexHeaders = new HttpHeaders();
+            kardexHeaders.setContentType(MediaType.APPLICATION_JSON);
+            org.springframework.http.HttpEntity<Kardex> kardexRequest = new org.springframework.http.HttpEntity<>(
+                    kardex, kardexHeaders);
+            restTemplate.postForObject(kardexSaveUrl, kardexRequest, Kardex.class);
+        }
+
+        // Verify if client has debt
+        if (client.getStateClient().equals("RESTRINGIDO")) {
+            boolean hasDebt = false;
+            // Get all loans of this client from local repository
+            List<LoanEntity> loans = loanRepository.findByIdClient(idClient);
+            for (LoanEntity l : loans) {
+                int penalty = l.getPenaltyLoan();
+                // Fix: use .equals() instead of == for String comparison
+                if (penalty > 0 && "ACTIVO".equals(l.getStateLoan())) {
+                    hasDebt = true;
+                    break;
+                }
+            }
+            // If client has no debt, change state to ACTIVO
+            if (!hasDebt) {
+                client.setStateClient("ACTIVO");
+                // Update client through client-service endpoint
+                String clientUpdateUrl = String.format("http://client-service/client/%d", client.getIdClient());
+                HttpHeaders clientHeaders = new HttpHeaders();
+                clientHeaders.setContentType(MediaType.APPLICATION_JSON);
+                org.springframework.http.HttpEntity<GetClient> clientRequest = new org.springframework.http.HttpEntity<>(
+                        client, clientHeaders);
+                restTemplate.put(clientUpdateUrl, clientRequest);
+            }
+        }
+
+        // Create price in price-service instead of saving it in loan entity
+        Price priceObj = new Price();
+        priceObj.setIdLoan(id);
+        priceObj.setPrice(totalValueLoan);
+
+        String priceUrl = "http://price-service/price/";
+        HttpHeaders priceHeaders = new HttpHeaders();
+        priceHeaders.setContentType(MediaType.APPLICATION_JSON);
+        org.springframework.http.HttpEntity<Price> priceRequest = new org.springframework.http.HttpEntity<>(priceObj,
+                priceHeaders);
+        restTemplate.postForObject(priceUrl, priceRequest, Price.class);
+
+        // Update loan status to FINALIZADO
+        loanEntity.setStateLoan("FINALIZADO");
+        return loanRepository.save(loanEntity);
+
     }
 
     ////////////////////// LOAN TOOL //////////////////////

@@ -10,6 +10,7 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Tool {
+    private Long idTool;
     private String nameTool;
     private String categoryTool;
     private int totalValue;
