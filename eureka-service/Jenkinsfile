@@ -1,0 +1,68 @@
+pipeline {
+    agent any
+    
+    environment {
+        DOCKERHUB_CREDENTIALS = credentials('docker-credentials')
+        DOCKERHUB_USERNAME = 'diegoraar'
+        SERVICE_NAME = 'eureka-service'
+    }
+    
+    stages {
+        stage('Checkout') {
+            steps {
+                echo "Clonando repositorio para ${SERVICE_NAME}..."
+                checkout scm
+            }
+        }
+        
+        stage('Build Maven Project') {
+            steps {
+                echo "Compilando ${SERVICE_NAME} con Maven..."
+                sh 'mvn clean package -DskipTests'
+            }
+        }
+        
+        stage('Build Docker Image') {
+            steps {
+                echo "Construyendo imagen Docker para ${SERVICE_NAME}..."
+                sh "docker build -t ${DOCKERHUB_USERNAME}/${SERVICE_NAME}:latest ."
+                sh "docker build -t ${DOCKERHUB_USERNAME}/${SERVICE_NAME}:${BUILD_NUMBER} ."
+            }
+        }
+        
+        stage('Login to DockerHub') {
+            steps {
+                echo 'Iniciando sesión en DockerHub...'
+                sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+            }
+        }
+        
+        stage('Push to DockerHub') {
+            steps {
+                echo "Subiendo ${SERVICE_NAME} a DockerHub..."
+                sh "docker push ${DOCKERHUB_USERNAME}/${SERVICE_NAME}:latest"
+                sh "docker push ${DOCKERHUB_USERNAME}/${SERVICE_NAME}:${BUILD_NUMBER}"
+            }
+        }
+        
+        stage('Cleanup') {
+            steps {
+                echo 'Limpiando imágenes locales...'
+                sh 'docker image prune -f'
+            }
+        }
+    }
+    
+    post {
+        always {
+            echo 'Cerrando sesión de DockerHub...'
+            sh 'docker logout'
+        }
+        success {
+            echo "✅ Pipeline de ${SERVICE_NAME} ejecutado exitosamente!"
+        }
+        failure {
+            echo "❌ El pipeline de ${SERVICE_NAME} ha fallado."
+        }
+    }
+}
