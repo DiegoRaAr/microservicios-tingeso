@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gateway-service-config
+data:
+  server-port: "8080"
+  config-server-uri: "http://config-service:8081"
+  eureka-server-url: "http://eureka-service:8761/eureka/"
+  # Configuración de Gateway
+  gateway-discovery-enabled: "true"
+  gateway-lower-case-service-id: "true"
