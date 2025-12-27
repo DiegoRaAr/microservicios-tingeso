@@ -5,12 +5,8 @@ metadata:
   labels:
     app: client-service
 spec:
-  type: ClusterIP  # Interno, se accede a través del Gateway
-  ports:
-  - port: 8090
-    targetPort: 8090
-    protocol: TCP
-    name: http
+  type: ClusterIP
+  clusterIP: None  # Headless service para acceso directo a pods
   selector:
     app: client-service
 ---
@@ -34,8 +30,6 @@ spec:
       - name: client-service
         image: diegoraar/client-service:latest
         imagePullPolicy: Always
-        ports:
-        - containerPort: 8090
         env:
         # Config Server
         - name: SPRING_CLOUD_CONFIG_URI
@@ -83,18 +77,3 @@ spec:
           limits:
             memory: "512Mi"
             cpu: "500m"
-        # Health checks
-        livenessProbe:
-          httpGet:
-            path: /actuator/health
-            port: 8090
-          initialDelaySeconds: 90
-          periodSeconds: 10
-          timeoutSeconds: 5
-        readinessProbe:
-          httpGet:
-            path: /actuator/health
-            port: 8090
-          initialDelaySeconds: 60
-          periodSeconds: 5
-          timeoutSeconds: 3
