@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: kardex-service
+spec:
+  clusterIP: None
+  selector:
+    app: kardex-service
+  ports:
+    - protocol: TCP
+      port: 8090
+      targetPort: 8090
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kardex-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kardex-service
+  template:
+    metadata:
+      labels:
+        app: kardex-service
+    spec:
+      containers:
+      - name: kardex-service
+        image: diegoraar/kardex-service:latest
+        imagePullPolicy: Always
+        envFrom:
+        - configMapRef:
+            name: kardex-config
+        - secretRef:
+            name: kardex-secret
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
