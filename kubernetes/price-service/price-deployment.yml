@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: loan-service
+  name: price-service
 spec:
   clusterIP: None
   selector:
-    app: loan-service
+    app: price-service
   ports:
     - protocol: TCP
       port: 8090
@@ -14,26 +14,26 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: loan-service
+  name: price-service
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: loan-service
+      app: price-service
   template:
     metadata:
       labels:
-        app: loan-service
+        app: price-service
     spec:
       containers:
-      - name: loan-service
-        image: diegoraar/loan-service:latest
+      - name: price-service
+        image: diegoraar/price-service:latest
         imagePullPolicy: Always
         envFrom:
         - configMapRef:
-            name: loan-config
+            name: price-config
         - secretRef:
-            name: loan-secret
+            name: price-secret
         resources:
           requests:
             memory: "256Mi"
