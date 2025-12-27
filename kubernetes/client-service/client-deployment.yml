@@ -1,0 +1,100 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: client-service
+  labels:
+    app: client-service
+spec:
+  type: ClusterIP  # Interno, se accede a través del Gateway
+  ports:
+  - port: 8090
+    targetPort: 8090
+    protocol: TCP
+    name: http
+  selector:
+    app: client-service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: client-service
+  labels:
+    app: client-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: client-service
+  template:
+    metadata:
+      labels:
+        app: client-service
+    spec:
+      containers:
+      - name: client-service
+        image: diegoraar/client-service:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8090
+        env:
+        # Config Server
+        - name: SPRING_CLOUD_CONFIG_URI
+          valueFrom:
+            configMapKeyRef:
+              name: client-service-config
+              key: config-server-uri
+        # Eureka
+        - name: EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE
+          valueFrom:
+            configMapKeyRef:
+              name: client-service-config
+              key: eureka-server-url
+        - name: EUREKA_INSTANCE_PREFER_IP_ADDRESS
+          value: "true"
+        - name: EUREKA_INSTANCE_HOSTNAME
+          value: "client-service"
+        # MySQL
+        - name: SPRING_DATASOURCE_URL
+          value: "jdbc:mysql://$(MYSQL_HOST):3306/$(MYSQL_DATABASE)"
+        - name: MYSQL_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: client-service-config
+              key: mysql-host
+        - name: MYSQL_DATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: client-service-config
+              key: mysql-database
+        - name: SPRING_DATASOURCE_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: client-service-credentials
+              key: mysql-username
+        - name: SPRING_DATASOURCE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: client-service-credentials
+              key: mysql-password
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "200m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        # Health checks
+        livenessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8090
+          initialDelaySeconds: 90
+          periodSeconds: 10
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 8090
+          initialDelaySeconds: 60
+          periodSeconds: 5
+          timeoutSeconds: 3

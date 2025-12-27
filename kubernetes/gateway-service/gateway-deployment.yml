@@ -33,7 +33,7 @@ spec:
       containers:
       - name: gateway-service
         image: diegoraar/gateway-service:latest
-        imagePullPolicy: Never
+        imagePullPolicy: Always
         ports:
         - containerPort: 8080
         env:
