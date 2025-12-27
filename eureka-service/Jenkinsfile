@@ -18,15 +18,19 @@ pipeline {
         stage('Build Maven Project') {
             steps {
                 echo "Compilando ${SERVICE_NAME} con Maven..."
-                sh 'mvn clean package -DskipTests'
+                dir('eureka-service') {
+                    sh 'mvn clean package -DskipTests'
+                }
             }
         }
         
         stage('Build Docker Image') {
             steps {
                 echo "Construyendo imagen Docker para ${SERVICE_NAME}..."
-                sh "docker build -t ${DOCKERHUB_USERNAME}/${SERVICE_NAME}:latest ."
-                sh "docker build -t ${DOCKERHUB_USERNAME}/${SERVICE_NAME}:${BUILD_NUMBER} ."
+                dir('eureka-service') {
+                    sh "docker build -t ${DOCKERHUB_USERNAME}/${SERVICE_NAME}:latest ."
+                    sh "docker build -t ${DOCKERHUB_USERNAME}/${SERVICE_NAME}:${BUILD_NUMBER} ."
+                }
             }
         }
         
