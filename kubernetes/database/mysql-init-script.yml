@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-init-script
+data:
+  init.sql: |
+    CREATE DATABASE IF NOT EXISTS bd_microservice_client;
+    CREATE DATABASE IF NOT EXISTS bd_microservice_kardex;
+    CREATE DATABASE IF NOT EXISTS bd_microservice_loan;
+    CREATE DATABASE IF NOT EXISTS bd_microservice_price;
+    CREATE DATABASE IF NOT EXISTS bd_microservice_report;
+    CREATE DATABASE IF NOT EXISTS bd_microservice_tool;
+    
+    GRANT ALL PRIVILEGES ON bd_microservice_client.* TO 'diego'@'%';
+    GRANT ALL PRIVILEGES ON bd_microservice_kardex.* TO 'diego'@'%';
+    GRANT ALL PRIVILEGES ON bd_microservice_loan.* TO 'diego'@'%';
+    GRANT ALL PRIVILEGES ON bd_microservice_price.* TO 'diego'@'%';
+    GRANT ALL PRIVILEGES ON bd_microservice_report.* TO 'diego'@'%';
+    GRANT ALL PRIVILEGES ON bd_microservice_tool.* TO 'diego'@'%';
+    FLUSH PRIVILEGES;

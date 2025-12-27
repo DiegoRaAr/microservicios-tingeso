@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-service-config
+data:
+  server-port: "8081"
+  git-uri: "https://github.com/DiegoRaAr/data-config-tingeso"
+  git-default-label: "main"
+  git-search-paths: "config-data"
