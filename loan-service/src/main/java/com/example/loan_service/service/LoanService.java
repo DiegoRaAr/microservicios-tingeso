@@ -120,7 +120,7 @@ public class LoanService {
             }
 
             // Call PUT endpoint to update tool
-            String toolUpdateUrl = String.format("http://tool-service/tool/%d", tool.getIdTool());
+            String toolUpdateUrl = "http://tool-service/tool/";
             org.springframework.http.HttpEntity<Tool> toolRequest = new org.springframework.http.HttpEntity<>(tool,
                     toolHeaders);
             restTemplate.put(toolUpdateUrl, toolRequest);
@@ -291,7 +291,7 @@ public class LoanService {
 
             // Update state client
             client.setStateClient("RESTRINGIDO");
-            String updateUrl = String.format("http://client-service/client/%d", client.getIdClient());
+            String updateUrl = "http://client-service/client/";
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             org.springframework.http.HttpEntity<GetClient> requestEntity = new org.springframework.http.HttpEntity<>(
@@ -340,7 +340,7 @@ public class LoanService {
             }
 
             // Call PUT endpoint of tool-service to update tool
-            String toolUpdateUrl = String.format("http://tool-service/tool/%d", tool.getIdTool());
+            String toolUpdateUrl = "http://tool-service/tool/";
             HttpHeaders toolHeaders = new HttpHeaders();
             toolHeaders.setContentType(MediaType.APPLICATION_JSON);
             org.springframework.http.HttpEntity<Tool> toolRequest = new org.springframework.http.HttpEntity<>(tool,
@@ -378,7 +378,7 @@ public class LoanService {
             if (!hasDebt) {
                 client.setStateClient("ACTIVO");
                 // Update client through client-service endpoint
-                String clientUpdateUrl = String.format("http://client-service/client/%d", client.getIdClient());
+                String clientUpdateUrl = "http://client-service/client/";
                 HttpHeaders clientHeaders = new HttpHeaders();
                 clientHeaders.setContentType(MediaType.APPLICATION_JSON);
                 org.springframework.http.HttpEntity<GetClient> clientRequest = new org.springframework.http.HttpEntity<>(

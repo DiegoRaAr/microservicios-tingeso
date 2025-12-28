@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: tool-service
+spec:
+  clusterIP: None
+  selector:
+    app: tool-service
+  ports:
+    - protocol: TCP
+      port: 8090
+      targetPort: 8090
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tool-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tool-service
+  template:
+    metadata:
+      labels:
+        app: tool-service
+    spec:
+      containers:
+      - name: tool-service
+        image: diegoraar/tool-service:latest
+        imagePullPolicy: Always
+        envFrom:
+        - configMapRef:
+            name: tool-config
+        - secretRef:
+            name: tool-secret
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "50m"
+          limits:
+            memory: "512Mi"
+            cpu: "200m"

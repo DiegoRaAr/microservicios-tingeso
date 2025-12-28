@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: report-service
+spec:
+  clusterIP: None
+  selector:
+    app: report-service
+  ports:
+    - protocol: TCP
+      port: 8090
+      targetPort: 8090
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: report-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: report-service
+  template:
+    metadata:
+      labels:
+        app: report-service
+    spec:
+      containers:
+      - name: report-service
+        image: diegoraar/report-service:latest
+        imagePullPolicy: Always
+        envFrom:
+        - configMapRef:
+            name: report-config
+        - secretRef:
+            name: report-secret
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "50m"
+          limits:
+            memory: "512Mi"
+            cpu: "200m"
