@@ -76,10 +76,13 @@ const AdminClient = () => {
                               type="button" 
                               onClick= {() => {
                                 loanService.updatePenalty(client.idClient)
-                                .then(() =>{
-                                navigate(`/loans-by-rut/${client.rutClient}`)}
-                                )}
-                              }
+                                .catch(() => {
+                                  // Ignorar error si no hay préstamos
+                                })
+                                .finally(() => {
+                                  navigate(`/loans-by-rut/${client.rutClient}`);
+                                });
+                              }}
                             >
                               Ver prestamos
                               </button>
@@ -89,10 +92,13 @@ const AdminClient = () => {
                               type="button" 
                               onClick= {() => {
                                 loanService.updatePenalty(client.idClient)
-                                .then(() =>{
-                                navigate(`/make-loan/${client.rutClient}`, {state: {client}})}
-                                )}
-                              }
+                                .catch(() => {
+                                  // Ignorar error si no hay préstamos
+                                })
+                                .finally(() => {
+                                  navigate(`/make-loan/${client.rutClient}`, {state: {client}});
+                                });
+                              }}
                             >
                               Iniciar prestamo
                               </button>

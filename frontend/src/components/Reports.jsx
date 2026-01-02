@@ -124,7 +124,11 @@ const Reports = () => {
                 <button className="btn btn-info mt-3" onClick={() => {
                     print();
                 }}>Guardar Reporte</button>
-
+                
+                <button className="btn btn-outline-danger mt-3 ms-2" onClick={() => {
+                    window.history.back();
+                }}>Volver</button>
+                
         </div>
     );
 };

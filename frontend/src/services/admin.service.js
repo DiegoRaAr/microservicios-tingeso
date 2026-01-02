@@ -1,23 +1,31 @@
 import httpAdmin from "../http-common";
 
+// NOTA: No existe admin-service en el backend
+// Este servicio está comentado hasta que se implemente
+
 const getAllAdmins = () => {
-    return httpAdmin.get('/v1/admin/');
+    console.warn('admin-service no existe en el backend');
+    return Promise.reject('admin-service no implementado');
 }
 
 const createAdmin = data => {
-    return httpAdmin.post('/v1/admin/', data);
+    console.warn('admin-service no existe en el backend');
+    return Promise.reject('admin-service no implementado');
 }
 
 const getAdminById = id => {
-    return httpAdmin.get(`/v1/admin/${id}`);
+    console.warn('admin-service no existe en el backend');
+    return Promise.reject('admin-service no implementado');
 }
 
-const updateAdmin = (id, data) => {
-    return httpAdmin.put(`/v1/admin/${id}`, data);
+const updateAdmin = (data) => {
+    console.warn('admin-service no existe en el backend');
+    return Promise.reject('admin-service no implementado');
 }
 
 const deleteAdmin = id => {
-    return httpAdmin.delete(`/v1/admin/${id}`);
+    console.warn('admin-service no existe en el backend');
+    return Promise.reject('admin-service no implementado');
 }
 
 export default { getAllAdmins, createAdmin, getAdminById, updateAdmin, deleteAdmin };

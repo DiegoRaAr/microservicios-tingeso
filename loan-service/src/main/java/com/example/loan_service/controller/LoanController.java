@@ -3,6 +3,7 @@ package com.example.loan_service.controller;
 import com.example.loan_service.entities.LoanEntity;
 import com.example.loan_service.entities.LoanToolEntity;
 import com.example.loan_service.models.LoanRequest;
+import com.example.loan_service.models.LoanResponse;
 import com.example.loan_service.models.Tool;
 import com.example.loan_service.service.LoanService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,8 +37,11 @@ public class LoanController {
 
     // Get loan by id
     @GetMapping("/{id}")
-    public ResponseEntity<Optional<LoanEntity>> getLoanById(@PathVariable Long id) {
-        Optional<LoanEntity> loan = loanService.findById(id);
+    public ResponseEntity<LoanResponse> getLoanById(@PathVariable Long id) {
+        LoanResponse loan = loanService.findByIdEnriched(id);
+        if (loan == null) {
+            return ResponseEntity.notFound().build();
+        }
         return ResponseEntity.ok(loan);
     }
 
@@ -57,8 +61,8 @@ public class LoanController {
 
     // Get loan by rut client
     @GetMapping("/loan-by-rut/{rut}")
-    public ResponseEntity<List<LoanEntity>> getLoanByRutClient(@PathVariable String rut) {
-        List<LoanEntity> loans = loanService.findByRutClient(rut);
+    public ResponseEntity<List<LoanResponse>> getLoanByRutClient(@PathVariable String rut) {
+        List<LoanResponse> loans = loanService.findByRutClient(rut);
         return ResponseEntity.ok(loans);
     }
 
@@ -79,9 +83,14 @@ public class LoanController {
 
     // Update penalty loan
     @PutMapping("/update-penalty/{id}")
-    public ResponseEntity<LoanEntity> updatePenaltyLoan(@PathVariable Long id) {
-        LoanEntity loanUpdated = loanService.updatePenaltyLoan(id);
-        return ResponseEntity.ok(loanUpdated);
+    public ResponseEntity<?> updatePenaltyLoan(@PathVariable Long id) {
+        try {
+            LoanEntity loanUpdated = loanService.updatePenaltyLoan(id);
+            return ResponseEntity.ok(loanUpdated);
+        } catch (RuntimeException e) {
+            // Si el préstamo no existe, retornar 404 en lugar de 500
+            return ResponseEntity.status(404).body("Loan not found with id: " + id);
+        }
     }
 
     // Finish loan

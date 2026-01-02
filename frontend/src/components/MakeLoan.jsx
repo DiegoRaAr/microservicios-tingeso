@@ -32,12 +32,12 @@ const MakeLoan = () => {
       alert("Selecciona herramientas y fecha de devolución");
       return;
     }
-    
+
     const days =
       Math.ceil(
         (new Date(endDate).getTime() - new Date().getTime()) /
         (1000 * 60 * 60 * 24)
-      ) || 1;
+      ) + 1 || 1;
 
     const total = tools
       .filter(tool => selectedTools.includes(tool.idTool))
@@ -50,12 +50,14 @@ const MakeLoan = () => {
     e.preventDefault();
 
     const loanData = {
-      initDate: new Date(),
-      endDate: new Date(endDate),
-      stateLoan: 'ACTIVO',
-      penaltyLoan: 0,
-      tool: selectedTools.map(id => ({ idTool: id })),
-      idClient: { idClient: client.idClient }
+      loan: {
+        initDate: new Date(),
+        endDate: new Date(endDate),
+        stateLoan: 'ACTIVO',
+        penaltyLoan: 0,
+        idClient: client.idClient
+      },
+      toolIds: selectedTools
     };
 
     try {
@@ -88,7 +90,7 @@ const MakeLoan = () => {
           <ul className="list-group">
             {tools
               .filter(tool => tool.stockTool >= 1 && tool.stateTool === "ACTIVA")
-              
+
               .map(tool => (
                 <li key={tool.idTool} className="list-group-item">
                   <input
@@ -118,10 +120,10 @@ const MakeLoan = () => {
           />
         </div>
 
-        <button 
-          type="submit" 
+        <button
+          type="submit"
           className="btn btn-success mx-2"
-          >
+        >
           Crear Préstamo
         </button>
 
@@ -139,11 +141,11 @@ const MakeLoan = () => {
           </div>
         )}
 
-        <button 
-          type="button" 
+        <button
+          type="button"
           className="btn btn-warning mx-2"
           onClick={() => navigate(-1)}
-          >
+        >
           Cancelar
         </button>
 

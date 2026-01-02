@@ -1,0 +1,27 @@
+pipeline{
+    agent any
+    stages{
+        stage("Build Frontend"){
+            steps{
+                checkout([$class: 'GitSCM', branches: [[name: '*/main']],
+                          userRemoteConfigs: [[url: 'https://github.com/DiegoRaAr/Tingeso']]])
+                dir("frontend-tingeso"){
+                    sh "npm install"
+                    sh "npm run build"
+                }
+            }
+        }
+        stage("Build and Push Docker Image"){
+            steps{
+                dir("frontend-tingeso"){
+                    script{
+                        withDockerRegistry(credentialsId: 'docker-credentials'){
+                            sh "docker build -t diegoraar/frontend-tingeso ."
+                            sh "docker push diegoraar/frontend-tingeso"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

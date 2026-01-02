@@ -2,14 +2,12 @@ import React, {useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toolService from "../services/tool.service";
 import '../App.css';
-import { useKeycloak } from "@react-keycloak/web";
 
 const Home = () => {
 
-    const { keycloak } = useKeycloak();
-    const roles = keycloak.tokenParsed?.realm_access?.roles || [];
-    const isAdmin = roles.includes("ADMIN");
-    const isEMPLOYEE = roles.includes("EMPLOYEE");
+    // Temporalmente todos los usuarios tienen acceso de admin
+    const isAdmin = true;
+    const isEMPLOYEE = true;
 
     const [tools, setTools] = useState([]);
     const addToolNumber = (id, number) => {

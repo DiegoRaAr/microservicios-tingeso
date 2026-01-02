@@ -4,6 +4,7 @@ import com.example.loan_service.entities.LoanEntity;
 import com.example.loan_service.entities.LoanToolEntity;
 import com.example.loan_service.models.GetClient;
 import com.example.loan_service.models.Kardex;
+import com.example.loan_service.models.LoanResponse;
 import com.example.loan_service.models.Price;
 import com.example.loan_service.models.Tool;
 import com.example.loan_service.repository.LoanRepository;
@@ -187,6 +188,44 @@ public class LoanService {
     public Optional<LoanEntity> findById(Long id) {
         return loanRepository.findById(id);
     }
+    
+    // Find Loan by Id with tools and total (enriched)
+    public LoanResponse findByIdEnriched(Long id) {
+        Optional<LoanEntity> loanOpt = loanRepository.findById(id);
+        
+        if (!loanOpt.isPresent()) {
+            return null;
+        }
+        
+        LoanEntity loan = loanOpt.get();
+        List<Tool> tools = findToolById(loan.getIdLoan());
+        
+        // Calculate total from tool prices
+        int total = tools.stream()
+                .mapToInt(Tool::getDailyCharge)
+                .sum();
+        
+        // Calculate days between initDate and endDate
+        long diffMillis = loan.getEndDate().getTime() - loan.getInitDate().getTime();
+        long days = diffMillis / (1000 * 60 * 60 * 24) + 1;
+        
+        total = (int) (total * days);
+        
+        // Create response DTO
+        LoanResponse loanResponse = new LoanResponse();
+        loanResponse.setIdLoan(loan.getIdLoan());
+        loanResponse.setInitDate(loan.getInitDate());
+        loanResponse.setHourLoan(loan.getHourLoan());
+        loanResponse.setEndDate(loan.getEndDate());
+        loanResponse.setStateLoan(loan.getStateLoan());
+        loanResponse.setPenaltyLoan(loan.getPenaltyLoan());
+        loanResponse.setIdPrice(loan.getIdPrice());
+        loanResponse.setIdClient(loan.getIdClient());
+        loanResponse.setTool(tools);
+        loanResponse.setTotalLoan(total);
+        
+        return loanResponse;
+    }
 
     // Update Loan
     public LoanEntity updateLoan(LoanEntity loanEntity) {
@@ -204,13 +243,57 @@ public class LoanService {
     }
 
     // Loans by rut of client
-    public List<LoanEntity> findByRutClient(String rut) {
+    public List<LoanResponse> findByRutClient(String rut) {
 
         String url = String.format("http://client-service/client/by-rut/%s", rut);
         GetClient client = restTemplate.getForObject(url, GetClient.class);
         Long idClient = client.getIdClient();
 
-        return loanRepository.findByIdClient(idClient);
+        List<LoanEntity> loans = loanRepository.findByIdClient(idClient);
+        List<LoanResponse> response = new ArrayList<>();
+        
+        System.out.println("DEBUG: Processing " + loans.size() + " loans");
+        
+        // Enrich each loan with tools and total price
+        for (LoanEntity loan : loans) {
+            List<Tool> tools = findToolById(loan.getIdLoan());
+            
+            System.out.println("DEBUG: Found " + tools.size() + " tools for loan " + loan.getIdLoan());
+            
+            // Calculate total from tool prices
+            int total = tools.stream()
+                    .mapToInt(Tool::getDailyCharge)
+                    .sum();
+            
+            // Calculate days between initDate and endDate
+            long diffMillis = loan.getEndDate().getTime() - loan.getInitDate().getTime();
+            long days = diffMillis / (1000 * 60 * 60 * 24) + 1;
+            
+            total = (int) (total * days);
+            
+            System.out.println("DEBUG: Calculated total: " + total + " for " + days + " days");
+            
+            // Create response DTO
+            LoanResponse loanResponse = new LoanResponse();
+            loanResponse.setIdLoan(loan.getIdLoan());
+            loanResponse.setInitDate(loan.getInitDate());
+            loanResponse.setHourLoan(loan.getHourLoan());
+            loanResponse.setEndDate(loan.getEndDate());
+            loanResponse.setStateLoan(loan.getStateLoan());
+            loanResponse.setPenaltyLoan(loan.getPenaltyLoan());
+            loanResponse.setIdPrice(loan.getIdPrice());
+            loanResponse.setIdClient(loan.getIdClient());
+            loanResponse.setTool(tools);
+            loanResponse.setTotalLoan(total);
+            
+            System.out.println("DEBUG: LoanResponse created: " + loanResponse);
+            
+            response.add(loanResponse);
+        }
+        
+        System.out.println("DEBUG: Returning " + response.size() + " loan responses");
+        
+        return response;
     }
 
     // Get tool by id loan
@@ -353,7 +436,7 @@ public class LoanService {
             kardex.setStateTool("DEVOLUCIÓN");
 
             // Call POST endpoint of kardex-service to save kardex
-            String kardexSaveUrl = "http://kardex-service/kardex";
+            String kardexSaveUrl = "http://kardex-service/kardex/";
             HttpHeaders kardexHeaders = new HttpHeaders();
             kardexHeaders.setContentType(MediaType.APPLICATION_JSON);
             org.springframework.http.HttpEntity<Kardex> kardexRequest = new org.springframework.http.HttpEntity<>(

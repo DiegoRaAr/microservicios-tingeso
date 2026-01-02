@@ -10,39 +10,12 @@ import MakeLoan from "./components/MakeLoan";
 import FinishLoan from "./components/FinishLoan";
 import Kardex from "./components/Kardex";
 import Reports from "./components/Reports";
-
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap-icons/font/bootstrap-icons.css';
 import ViewLoanClient from "./components/ViewLoanClient";
 import { BrowserRouter as Router } from "react-router-dom";
-import { useKeycloak } from "@react-keycloak/web";
-import keycloak from "./services/keycloak";
-
 
 function App() {
-
-  const {keycloak, initialized} = useKeycloak();
-
-  if (!initialized) return <div>Cargando...</div>;
-
-  const isLoggedIn = keycloak.authenticated;
-  const roles = keycloak.tokenParsed?.realm_access?.roles || [];
-
-  const privateRoute = ({element, rolesAllowed}) => {
-    if(!isLoggedIn) {
-      keycloak.login();
-      return null;
-    }
-    if (rolesAllowed && !rolesAllowed.some(r => roles.includes(r))) {
-      return <h2>No tienes permiso para ver esta página</h2>;
-    }
-    return element;
-  };
-
-  if (!isLoggedIn) {
-    keycloak.login();
-    return null;
-  }
-
-
   return (
     <Router>
       <Navbar />

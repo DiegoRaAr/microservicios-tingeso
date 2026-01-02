@@ -27,7 +27,7 @@ spec:
     spec:
       containers:
       - name: keycloak
-        image: quay.io/keycloak/keycloak:23.0
+        image: quay.io/keycloak/keycloak:21.1.2
         args: ["start-dev"]
         env:
         - name: KEYCLOAK_ADMIN
@@ -46,9 +46,18 @@ spec:
           value: "true"
         - name: KC_HOSTNAME_STRICT
           value: "false"
+        - name: KC_HOSTNAME_STRICT_BACKCHANNEL
+          value: "false"
+        - name: KC_HOSTNAME_URL
+          value: "http://192.168.39.131:30080/auth"
+        - name: KC_HOSTNAME_ADMIN_URL
+          value: "http://192.168.39.131:30080/auth"
         ports:
         - name: http
           containerPort: 8080
+        volumeMounts:
+        - name: keycloak-data
+          mountPath: /opt/keycloak/data
         readinessProbe:
           httpGet:
             path: /
@@ -70,3 +79,7 @@ spec:
           limits:
             memory: "1Gi"
             cpu: "500m"
+      volumes:
+      - name: keycloak-data
+        persistentVolumeClaim:
+          claimName: keycloak-data

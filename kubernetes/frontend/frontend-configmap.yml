@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: frontend-config
+data:
+  VITE_BACKEND_SERVER: "gateway-service"
+  VITE_BACKEND_PORT: "8080"
+  VITE_KEYCLOAK_URL: "http://keycloak:8080"
+  VITE_KEYCLOAK_REALM: "tingeso-realm"
+  VITE_KEYCLOAK_CLIENT_ID: "frontend-app"

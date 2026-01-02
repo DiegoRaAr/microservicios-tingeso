@@ -1,32 +1,27 @@
-# Etapa 1: Construcción del proyecto
-FROM node:22 AS build
-
+# Etapa 1: Construcción con Node (Vite)
+FROM node:20 AS build
 WORKDIR /app
 
+# Copiamos dependencias y código
 COPY package*.json ./
-
-RUN npm install --include=dev
-
+RUN npm install
 COPY . .
 
-# Build-time args para VITE_*
-ARG VITE_BACKEND_SERVER=localhost
-ARG VITE_BACKEND_PORT=8090
-ENV VITE_BACKEND_SERVER=$VITE_BACKEND_SERVER
-ENV VITE_BACKEND_PORT=$VITE_BACKEND_PORT
-
-# Compilar el frontend (genera carpeta "dist")
+# Construimos el proyecto para producción
 RUN npm run build
 
-
 # Etapa 2: Servir con Nginx
-FROM nginx:alpine
+FROM nginx:1.27-alpine
+WORKDIR /usr/share/nginx/html
 
-# Copiar los archivos compilados a la carpeta de Nginx
-COPY --from=build /app/dist /usr/share/nginx/html
+# Borramos contenido por defecto
+RUN rm -rf ./*
 
-# Exponer el puerto 80
+# Copiamos el build de Vite
+COPY --from=build /app/dist ./
+
+# Configuramos Nginx para SPA
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
 EXPOSE 80
-
-# Iniciar Nginx
 CMD ["nginx", "-g", "daemon off;"]
