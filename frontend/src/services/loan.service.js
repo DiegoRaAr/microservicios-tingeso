@@ -36,8 +36,9 @@ const finishLoan = (id,total) => {
     return httpLoan.put(`/loan-service/loan/finish-loan/${id}/${total}`);
 }
 
+// Obetenr prestamos por rango de fechas (Cambiar a microservicio de reportes)
 const getLoanByRangeDate = (startDate, endDate) => {
-    return httpLoan.get(`/loan-service/loan/loans-by-range-date/${startDate}/${endDate}`);
+    return httpLoan.get(`/report-service/report/loans-by-range-date/${startDate}/${endDate}`);
 }
 
 export default { getAllLoans, createLoan, getLoanById, updateLoan, deleteLoan , getLoansByRut, getToolsByLoanId, updatePenalty, finishLoan, getLoanByRangeDate };

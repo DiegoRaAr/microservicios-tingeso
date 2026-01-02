@@ -29,7 +29,7 @@ const changeStateClient = (id) => {
 }
 
 const getRestrictedClients = () => {
-    return httpClient.get('/client-service/client/restricted-clients');
+    return httpClient.get('/report-service/report/restricted-clients');
 }
 
 export default { getAllClients, createClient, getClientById, updateClient, deleteClient, getClientByRut, changeStateClient, getRestrictedClients };

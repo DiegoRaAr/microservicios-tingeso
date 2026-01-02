@@ -28,7 +28,7 @@ spec:
       containers:
       - name: report-service
         image: diegoraar/report-service:latest
-        imagePullPolicy: Always
+        imagePullPolicy: Never
         envFrom:
         - configMapRef:
             name: report-config

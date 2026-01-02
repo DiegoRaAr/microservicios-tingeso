@@ -28,6 +28,7 @@ const addTool = (id) => {
     return httpTool.put(`/tool-service/tool/add-tool/${id}`);
 }
 
+// Funcion para obtener las mejores herramientas en un rango de fechas (cambiar al microservicio de reportes)
 const getBestToolsByRangeDate = (initDate, endDate) => {
     return httpTool.get(`/tool-service/tool/best-tools-by-range-date/${initDate}/${endDate}`);
 }
