@@ -9,9 +9,9 @@ spring:
       enabled: true
       uri: ${SPRING_CLOUD_CONFIG_URI:http://localhost:8081}
   datasource:
-    url: jdbc:mysql://localhost:3306/bd_microservice_price
-    username: diego
-    password: diego1234
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/bd_microservice_price}
+    username: ${SPRING_DATASOURCE_USERNAME:diego}
+    password: ${SPRING_DATASOURCE_PASSWORD:diego1234}
   jpa:
     hibernate:
       ddl-auto: update
@@ -19,7 +19,7 @@ spring:
 eureka:
   client:
     service-url:
-      defaultZone: ${EUREKA_KARDEX_SERVICE_URL_DEFAULTZONE:http://localhost:8761/eureka/}
+      defaultZone: ${EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE:http://localhost:8761/eureka/}
   instance:
     prefer-ip-address: ${EUREKA_INSTANCE_PREFER_IP_ADDRESS:true}
     hostname: ${EUREKA_INSTANCE_HOSTNAME:price-service}

@@ -5,6 +5,9 @@ metadata:
 data:
   SERVER_PORT: "0"
   SPRING_CLOUD_CONFIG_URI: "http://config-service:8081"
-  EUREKA_PRICE_SERVICE_URL_DEFAULTZONE: "http://eureka-service:8761/eureka/"
+  EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: "http://eureka-service:8761/eureka/"
   EUREKA_INSTANCE_HOSTNAME: "price-service"
-  EUREKA_INSTANCE_PREFER_IP_ADDRESS: "false"
+  EUREKA_INSTANCE_PREFER_IP_ADDRESS: "true"
+  SPRING_DATASOURCE_URL: "jdbc:mysql://mysql:3306/bd_microservice_price"
+  SPRING_DATASOURCE_USERNAME: "diego"
+  SPRING_DATASOURCE_PASSWORD: "diego1234"
