@@ -3,6 +3,7 @@ kind: ConfigMap
 metadata:
   name: tool-config
 data:
+  SERVER_PORT: "0"
   SPRING_CLOUD_CONFIG_URI: "http://config-service:8081"
   EUREKA_TOOL_SERVICE_URL_DEFAULTZONE: "http://eureka-service:8761/eureka/"
   EUREKA_INSTANCE_HOSTNAME: "tool-service"

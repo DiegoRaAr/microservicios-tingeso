@@ -6,10 +6,6 @@ spec:
   clusterIP: None
   selector:
     app: kardex-service
-  ports:
-    - protocol: TCP
-      port: 8090
-      targetPort: 8090
 ---
 apiVersion: apps/v1
 kind: Deployment

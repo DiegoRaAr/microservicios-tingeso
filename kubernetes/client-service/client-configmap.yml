@@ -3,7 +3,8 @@ kind: ConfigMap
 metadata:
   name: client-service-config
 data:
-  server-port: "8090"
+  SERVER_PORT: "0"
+  server-port: "0"
   config-server-uri: "http://config-service:8081"
   eureka-server-url: "http://eureka-service:8761/eureka/"
   # Configuración de MySQL
